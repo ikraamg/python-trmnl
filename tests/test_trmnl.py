@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import aiohttp
 from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST
-from aioresponses import aioresponses
+from aiointercept import aiointercept
 import pytest
 
 from trmnl import TRMNLClient
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     ],
 )
 async def test_get(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
     method: str,
@@ -63,7 +63,7 @@ async def test_get(
 
 
 async def test_create_plugin_setting(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -83,7 +83,7 @@ async def test_create_plugin_setting(
 
 
 async def test_update_device(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test updating a device."""
@@ -101,7 +101,7 @@ async def test_update_device(
 
 
 async def test_update_playlist_item(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test updating a playlist item."""
@@ -119,7 +119,7 @@ async def test_update_playlist_item(
 
 
 async def test_delete_plugin_setting(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test deleting a plugin setting."""
@@ -137,7 +137,7 @@ async def test_delete_plugin_setting(
 
 
 async def test_authentication_error(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test that a 401 response raises TRMNLAuthenticationError."""
@@ -147,7 +147,7 @@ async def test_authentication_error(
 
 
 async def test_generic_error(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test that a non-401 error response raises TRMNLError."""
