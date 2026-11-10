@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import aiohttp
 from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST
 from aioresponses import aioresponses
 import pytest
 
+from trmnl import TRMNLClient
 from trmnl.exceptions import TRMNLAuthenticationError, TRMNLError
 
 from . import load_fixture
@@ -15,7 +17,6 @@ from .const import HEADERS, URL
 
 if TYPE_CHECKING:
     from syrupy import SnapshotAssertion
-    from trmnl.trmnl import TRMNLClient
 
 
 @pytest.mark.parametrize(
@@ -153,3 +154,25 @@ async def test_generic_error(
     responses.get(f"{URL}devices", status=500)
     with pytest.raises(TRMNLError):
         await client.get_devices()
+
+
+async def test_custom_base_url(responses: aioresponses) -> None:
+    """Test that requests go to a custom base URL."""
+    responses.get(
+        "http://byos.local:2300/api/devices",
+        status=200,
+        body=load_fixture("devices.json"),
+    )
+    async with (
+        aiohttp.ClientSession() as session,
+        TRMNLClient(
+            "token", session=session, base_url="http://byos.local:2300"
+        ) as client,
+    ):
+        await client.get_devices()
+    responses.assert_called_once_with(
+        "http://byos.local:2300/api/devices",
+        METH_GET,
+        headers=HEADERS,
+        json=None,
+    )
