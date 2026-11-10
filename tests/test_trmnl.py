@@ -38,7 +38,7 @@ if TYPE_CHECKING:
         "get_plugin_settings",
     ],
 )
-async def test_get(
+async def test_get(  # noqa: PLR0917
     responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
