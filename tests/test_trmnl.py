@@ -156,7 +156,7 @@ async def test_generic_error(
         await client.get_devices()
 
 
-async def test_custom_base_url(responses: aioresponses) -> None:
+async def test_custom_base_url(responses: aiointercept) -> None:
     """Test that requests go to a custom base URL."""
     responses.get(
         "http://byos.local:2300/api/devices",
