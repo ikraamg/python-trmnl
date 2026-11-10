@@ -75,7 +75,7 @@ class User(DataClassORJSONMixin):
     time_zone: str
     time_zone_iana: str
     utc_offset: int
-    api_key: str
+    api_key: str | None = None
 
 
 @dataclass
