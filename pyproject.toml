@@ -49,13 +49,12 @@ dev = [
     "pylint==4.0.8",
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
-    "pytest-cov==7.0.0",
+    "pytest-cov==7.1.0",
     "ruff==0.17.4",
     "safety==3.8.1",
     "yamllint==1.38.0",
     "syrupy==5.5.3",
-    "aioresponses==0.7.9",
-    "aiohttp<3.15",
+    "aiointercept==1.0.0",
 ]
 
 [tool.uv]
