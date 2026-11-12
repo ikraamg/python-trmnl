@@ -69,8 +69,8 @@ class User(DataClassORJSONMixin):
     identifier: int = field(metadata=field_options(alias="id"))
     name: str
     email: str
-    first_name: str
-    last_name: str
+    first_name: str | None
+    last_name: str | None
     locale: str
     time_zone: str
     time_zone_iana: str
@@ -95,12 +95,13 @@ class PlaylistItem(DataClassORJSONMixin):
     identifier: int = field(metadata=field_options(alias="id"))
     mashup_id: int | None
     mirror: bool
-    plugin_setting_id: int
-    rendered_at: str
+    plugin_setting_id: int | None
+    rendered_at: str | None
     row_order: int
     updated_at: str
     visible: bool
-    plugin_setting: PluginSetting
+    # Absent for mashup items
+    plugin_setting: PluginSetting | None = None
 
 
 @dataclass

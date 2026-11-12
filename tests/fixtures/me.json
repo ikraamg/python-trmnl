@@ -4,7 +4,7 @@
         "name": "Joost Lekkerkerker",
         "email": "joostlek@outlook.com",
         "first_name": "Joost",
-        "last_name": "Lekkerkerker",
+        "last_name": null,
         "locale": "en",
         "time_zone": "Amsterdam",
         "time_zone_iana": "Europe/Amsterdam",
