@@ -8,7 +8,7 @@ import logging
 from typing import Any, Self
 
 from aiohttp import ClientSession
-from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST
+from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST, METH_PUT
 from yarl import URL
 
 from trmnl.exceptions import TRMNLAuthenticationError, TRMNLError
@@ -91,6 +91,10 @@ class TRMNLClient:
         """Handle a POST request to the TRMNL API."""
         return await self._request(uri, method=METH_POST, data=data)
 
+    async def _put(self, uri: str, data: dict[str, Any]) -> str:
+        """Handle a PUT request to the TRMNL API."""
+        return await self._request(uri, method=METH_PUT, data=data)
+
     async def _delete(self, uri: str) -> None:
         """Handle a DELETE request to the TRMNL API."""
         await self._request(uri, method=METH_DELETE)
@@ -160,6 +164,30 @@ class TRMNLClient:
     async def delete_plugin_setting(self, plugin_setting_id: int) -> None:
         """Delete a plugin setting."""
         await self._delete(f"plugin_settings/{plugin_setting_id}")
+
+    async def update_plugin_setting_data(
+        self, plugin_setting_id: int, data: dict[str, Any]
+    ) -> None:
+        """Send merge variables to a webhook plugin setting."""
+        await self._post(
+            f"plugin_settings/{plugin_setting_id}/data", {"merge_variables": data}
+        )
+
+    async def write_markup(
+        self, plugin_setting_id: int, size: str, content: str
+    ) -> None:
+        """Write the markup of one size, such as markup_full."""
+        await self._put(
+            f"plugin_settings/{plugin_setting_id}/markup/{size}", {"content": content}
+        )
+
+    async def update_plugin_setting_fields(
+        self, plugin_setting_id: int, fields: dict[str, Any]
+    ) -> None:
+        """Update the form fields of a plugin setting, such as strategy."""
+        await self._patch(
+            f"plugin_settings/{plugin_setting_id}/settings", {"fields": fields}
+        )
 
     async def close(self) -> None:
         """Close open client session."""

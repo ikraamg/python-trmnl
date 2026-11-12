@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
-from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST
+from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST, METH_PUT
 from aiointercept import aiointercept
 import pytest
 
@@ -133,6 +133,63 @@ async def test_delete_plugin_setting(
         METH_DELETE,
         headers=HEADERS,
         json=None,
+    )
+
+
+async def test_update_plugin_setting_data(
+    responses: aiointercept,
+    client: TRMNLClient,
+) -> None:
+    """Test pushing merge variables to a plugin setting."""
+    responses.post(
+        f"{URL}plugin_settings/539094/data",
+        status=200,
+        body='{"error": null, "merge_variables": {"temperature": 21}}',
+    )
+    await client.update_plugin_setting_data(539094, {"temperature": 21})
+    responses.assert_called_once_with(
+        f"{URL}plugin_settings/539094/data",
+        METH_POST,
+        headers=HEADERS,
+        json={"merge_variables": {"temperature": 21}},
+    )
+
+
+async def test_write_markup(
+    responses: aiointercept,
+    client: TRMNLClient,
+) -> None:
+    """Test writing markup for one size of a plugin setting."""
+    responses.put(
+        f"{URL}plugin_settings/539094/markup/markup_full",
+        status=200,
+        body='{"data": {"success": true, "size": "markup_full"}}',
+    )
+    await client.write_markup(539094, "markup_full", "<div>{{ temperature }}</div>")
+    responses.assert_called_once_with(
+        f"{URL}plugin_settings/539094/markup/markup_full",
+        METH_PUT,
+        headers=HEADERS,
+        json={"content": "<div>{{ temperature }}</div>"},
+    )
+
+
+async def test_update_plugin_setting_fields(
+    responses: aiointercept,
+    client: TRMNLClient,
+) -> None:
+    """Test updating the form fields of a plugin setting."""
+    responses.patch(
+        f"{URL}plugin_settings/539094/settings",
+        status=200,
+        body='{"data": {"success": true, "warnings": []}}',
+    )
+    await client.update_plugin_setting_fields(539094, {"strategy": "webhook"})
+    responses.assert_called_once_with(
+        f"{URL}plugin_settings/539094/settings",
+        METH_PATCH,
+        headers=HEADERS,
+        json={"fields": {"strategy": "webhook"}},
     )
 
 
