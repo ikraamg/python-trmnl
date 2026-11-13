@@ -83,7 +83,7 @@ async def test_create_plugin_setting(
 
 
 async def test_migrate_to_oauth(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
 ) -> None:
