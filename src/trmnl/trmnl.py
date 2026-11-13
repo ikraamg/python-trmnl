@@ -206,7 +206,7 @@ class TRMNLClient:
             f"plugin_settings/{plugin_setting_id}/data", {"merge_variables": data}
         )
 
-    async def write_markup(
+    async def update_plugin_setting_markup(
         self, plugin_setting_id: int, size: str, content: str
     ) -> None:
         """Write the markup of one size, such as markup_full."""

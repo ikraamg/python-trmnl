@@ -161,7 +161,7 @@ async def test_update_plugin_setting_data(
     )
 
 
-async def test_write_markup(
+async def test_update_plugin_setting_markup(
     responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
@@ -171,7 +171,9 @@ async def test_write_markup(
         status=200,
         body='{"data": {"success": true, "size": "markup_full"}}',
     )
-    await client.write_markup(539094, "markup_full", "<div>{{ temperature }}</div>")
+    await client.update_plugin_setting_markup(
+        539094, "markup_full", "<div>{{ temperature }}</div>"
+    )
     responses.assert_called_once_with(
         f"{URL}plugin_settings/539094/markup/markup_full",
         METH_PUT,
