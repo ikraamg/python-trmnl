@@ -15,6 +15,7 @@ from trmnl.exceptions import (
     TRMNLError,
     TRMNLForbiddenError,
     TRMNLNotFoundError,
+    TRMNLRateLimitError,
 )
 
 from . import load_fixture
@@ -189,6 +190,30 @@ async def test_error(  # noqa: PLR0917
     with pytest.raises(error) as exc_info:
         await client.get_devices()
     assert str(exc_info.value) == message
+
+
+@pytest.mark.parametrize(
+    ("headers", "retry_after"),
+    [({"Retry-After": "3600"}, 3600), (None, None)],
+    ids=["retry_after", "no_retry_after"],
+)
+async def test_rate_limit_error(
+    responses: aiointercept,
+    client: TRMNLClient,
+    headers: dict[str, str] | None,
+    retry_after: int | None,
+) -> None:
+    """Test that a 429 raises with the reason and the Retry-After seconds."""
+    responses.get(
+        f"{URL}devices",
+        status=429,
+        body='{"error": "Rate limit exceeded."}',
+        headers=headers,
+    )
+    with pytest.raises(TRMNLRateLimitError) as exc_info:
+        await client.get_devices()
+    assert str(exc_info.value) == "Request failed with status 429: Rate limit exceeded."
+    assert exc_info.value.retry_after == retry_after
 
 
 async def test_custom_base_url(responses: aiointercept) -> None:

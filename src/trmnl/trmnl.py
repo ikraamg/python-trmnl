@@ -16,6 +16,7 @@ from trmnl.exceptions import (
     TRMNLError,
     TRMNLForbiddenError,
     TRMNLNotFoundError,
+    TRMNLRateLimitError,
 )
 from trmnl.models import (
     Device,
@@ -96,6 +97,13 @@ class TRMNLClient:
         if response.status == 401:
             msg = "Authentication failed. Check your API token."
             raise TRMNLAuthenticationError(msg)
+
+        if response.status == 429:
+            retry_after = response.headers.get("Retry-After", "")
+            raise TRMNLRateLimitError(
+                await _error_message(response),
+                int(retry_after) if retry_after.isdigit() else None,
+            )
 
         if response.status >= 400:
             raise _ERRORS.get(response.status, TRMNLError)(
