@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import aiohttp
 from aiohttp.hdrs import METH_DELETE, METH_GET, METH_PATCH, METH_POST
-from aioresponses import aioresponses
+from aiointercept import aiointercept
 import pytest
 
+from trmnl import TRMNLClient
 from trmnl.exceptions import TRMNLAuthenticationError, TRMNLError
 
 from . import load_fixture
@@ -15,7 +17,6 @@ from .const import HEADERS, URL
 
 if TYPE_CHECKING:
     from syrupy import SnapshotAssertion
-    from trmnl.trmnl import TRMNLClient
 
 
 @pytest.mark.parametrize(
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
         ("get_devices", {}, "devices", "devices"),
         ("get_device", {"device_id": 42793}, "devices/42793", "device"),
         ("get_me", {}, "me", "me"),
+        ("get_me", {}, "me", "me_without_api_key"),
         ("get_playlist_items", {}, "playlists/items", "playlist_items"),
         ("get_plugin_settings", {}, "plugin_settings", "plugin_settings"),
     ],
@@ -31,12 +33,13 @@ if TYPE_CHECKING:
         "get_devices",
         "get_device",
         "get_me",
+        "get_me_without_api_key",
         "get_playlist_items",
         "get_plugin_settings",
     ],
 )
-async def test_get(
-    responses: aioresponses,
+async def test_get(  # noqa: PLR0917
+    responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
     method: str,
@@ -60,7 +63,7 @@ async def test_get(
 
 
 async def test_create_plugin_setting(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -100,7 +103,7 @@ async def test_migrate_to_oauth(
 
 
 async def test_update_device(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test updating a device."""
@@ -118,7 +121,7 @@ async def test_update_device(
 
 
 async def test_update_playlist_item(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test updating a playlist item."""
@@ -136,7 +139,7 @@ async def test_update_playlist_item(
 
 
 async def test_delete_plugin_setting(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test deleting a plugin setting."""
@@ -154,7 +157,7 @@ async def test_delete_plugin_setting(
 
 
 async def test_authentication_error(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test that a 401 response raises TRMNLAuthenticationError."""
@@ -164,10 +167,32 @@ async def test_authentication_error(
 
 
 async def test_generic_error(
-    responses: aioresponses,
+    responses: aiointercept,
     client: TRMNLClient,
 ) -> None:
     """Test that a non-401 error response raises TRMNLError."""
     responses.get(f"{URL}devices", status=500)
     with pytest.raises(TRMNLError):
         await client.get_devices()
+
+
+async def test_custom_base_url(responses: aiointercept) -> None:
+    """Test that requests go to a custom base URL."""
+    responses.get(
+        "http://byos.local:2300/api/devices",
+        status=200,
+        body=load_fixture("devices.json"),
+    )
+    async with (
+        aiohttp.ClientSession() as session,
+        TRMNLClient(
+            "token", session=session, base_url="http://byos.local:2300"
+        ) as client,
+    ):
+        await client.get_devices()
+    responses.assert_called_once_with(
+        "http://byos.local:2300/api/devices",
+        METH_GET,
+        headers=HEADERS,
+        json=None,
+    )

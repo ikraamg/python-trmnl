@@ -40,6 +40,8 @@ class TRMNLClient:
     token: str
     session: ClientSession | None = None
     request_timeout: int = 10
+    # BYOS servers often use plain HTTP and a custom port.
+    base_url: str = f"https://{HOST}"
     _close_session: bool = False
 
     async def _request(
@@ -50,7 +52,7 @@ class TRMNLClient:
         data: dict[str, Any] | None = None,
     ) -> str:
         """Handle a request to the TRMNL API."""
-        url = URL.build(host=HOST, scheme="https").joinpath(f"api/{uri}")
+        url = URL(self.base_url).joinpath(f"api/{uri}")
         headers = {
             "User-Agent": f"python-trmnl/{VERSION}",
             "Authorization": f"Bearer {self.token}",
