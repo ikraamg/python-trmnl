@@ -88,6 +88,25 @@ async def test_create_plugin_setting(
     )
 
 
+async def test_create_plugin_setting_by_keyname(
+    responses: aiointercept,
+    client: TRMNLClient,
+) -> None:
+    """Test creating a plugin setting by a native plugin's keyname."""
+    responses.post(
+        f"{URL}plugin_settings",
+        status=200,
+        body=load_fixture("plugin_setting.json"),
+    )
+    await client.create_plugin_setting("Home", plugin_keyname="home_assistant")
+    responses.assert_called_once_with(
+        f"{URL}plugin_settings",
+        METH_POST,
+        headers=HEADERS,
+        json={"name": "Home", "plugin_keyname": "home_assistant"},
+    )
+
+
 async def test_update_device(
     responses: aiointercept,
     client: TRMNLClient,

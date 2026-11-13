@@ -187,10 +187,19 @@ class TRMNLClient:
         result = await self._get(uri)
         return PluginSettingsResponse.from_json(result).data
 
-    async def create_plugin_setting(self, name: str, plugin_id: int) -> PluginSetting:
-        """Create a new plugin setting."""
+    async def create_plugin_setting(
+        self,
+        name: str,
+        plugin_id: int | None = None,
+        *,
+        plugin_keyname: str | None = None,
+    ) -> PluginSetting:
+        """Create a new plugin setting by plugin id, or by a native plugin's keyname."""
+        payload = {"plugin_id": plugin_id, "plugin_keyname": plugin_keyname}
         result = await self._post(
-            "plugin_settings", {"name": name, "plugin_id": plugin_id}
+            "plugin_settings",
+            {"name": name}
+            | {key: value for key, value in payload.items() if value is not None},
         )
         return PluginSettingResponse.from_json(result).data
 
